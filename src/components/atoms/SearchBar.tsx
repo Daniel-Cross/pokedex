@@ -3,11 +3,13 @@ import { PALETTE, SCREEN_WIDTH, edgeMargin } from "../../styles/styles";
 
 interface SearchBarProps {
   setSearchQuery: (value: string) => void;
+  searchQuery: string;
 }
 
-const SearchBar = ({ setSearchQuery }: SearchBarProps) => {
+const SearchBar = ({ setSearchQuery, searchQuery }: SearchBarProps) => {
   return (
     <TextInput
+      value={searchQuery}
       onChangeText={(value: string) => {
         setSearchQuery(value);
       }}

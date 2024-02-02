@@ -10,18 +10,14 @@ import {
   getSinglePokemonData,
 } from "../store/pokemonDataSlice/pokemonDataSlice";
 import PokemonModal from "../components/organisms/PokemonModal";
-import {
-  AllPokemonData,
-  REDUX_REQUEST_STATUS,
-} from "../store/pokemonDataSlice/types";
+import { REDUX_REQUEST_STATUS } from "../store/pokemonDataSlice/types";
 import LoadingScreen from "./LoadingScreen";
 import ErrorScreen from "./ErrorScreen";
 
 const SearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [dataIndex, setDataIndex] = useState(10);
-  const [displayedData, setDisplayedData] = useState<AllPokemonData[]>([]);
+  const [dataIndex, setDataIndex] = useState(30);
   const { data, status } = useSelector((state: RootState) => state.pokemonData);
   const [pokemonData, setPokemonData] = useState(data);
   const dispatch = useDispatch();
@@ -31,19 +27,21 @@ const SearchScreen = () => {
   }, []);
 
   useEffect(() => {
-    setPokemonData(
-      data.filter((pokemon) =>
-        pokemon.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [data, searchQuery]);
-
-  useEffect(() => {
-    setDisplayedData(data.slice(0, dataIndex));
-  }, [dataIndex]);
+    if (searchQuery.length > 0) {
+      setPokemonData(
+        data.filter((pokemon) =>
+          pokemon.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    } else {
+      setPokemonData(data.slice(0, dataIndex));
+    }
+  }, [data, searchQuery, dataIndex]);
 
   const handleLoadMorePokemon = () => {
-    setDataIndex((prevIndex) => prevIndex + 30);
+    if (data.length >= 30) {
+      setDataIndex((prevIndex) => prevIndex + 30);
+    }
   };
 
   const handleOnPressPokemon = async (url: string) => {
@@ -62,7 +60,6 @@ const SearchScreen = () => {
           <FlatList
             style={FLAT_LIST_CONTAINER.styles}
             data={pokemonData}
-            extraData={displayedData}
             numColumns={2}
             keyExtractor={(item) => item.name}
             renderItem={({ item }) => (
@@ -72,7 +69,12 @@ const SearchScreen = () => {
                 handleOnPressPokemon={handleOnPressPokemon}
               />
             )}
-            ListHeaderComponent={<SearchBar setSearchQuery={setSearchQuery} />}
+            ListHeaderComponent={
+              <SearchBar
+                setSearchQuery={setSearchQuery}
+                searchQuery={searchQuery}
+              />
+            }
             onEndReached={handleLoadMorePokemon}
             onEndReachedThreshold={0.5}
           />
